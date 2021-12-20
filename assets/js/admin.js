@@ -941,15 +941,13 @@ jQuery(document).ready(function ($) {
 	});
 
 	/**
-	 * 
-	 * 
-	 *  Calendar extension
-	 * 
+	 * Calendar extensions added by Yass-Dev
+	 * @since 2.2.4
 	 */
 
 	if ('rtb-calendar' ==  ( new URL( window.location.href ) ).searchParams.get( 'page' )){
 		
-		
+
 		let calendarEl = document.getElementById('calendar');
 		const today = new Date().toISOString().split('T')[0];
 
@@ -962,6 +960,14 @@ jQuery(document).ready(function ($) {
 				center: 'title',
 				right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
 			},
+			buttonsText: {
+				today: "Aujourd'hui",
+				month: 'Mois',
+				week: 'Semaine',
+				day: 'Journée',
+				list: 'Liste'
+			},
+			firstDay: 1,
 			initialDate: today,
 			navLinks: true, // can click day/week names to navigate views
 			businessHours: true, // display business hours

@@ -125,7 +125,10 @@ class rtbInit {
 		require_once( RTB_PLUGIN_DIR . '/includes/PaymentManager.class.php' );
 		$this->payment_manager = new rtbPaymentManager();
 
-		// Load plugin calendar
+		/**
+		 * Calendar extensions added by Yass-Dev
+		 * @since 2.2.4
+		 */
 		require_once( RTB_PLUGIN_DIR . '/includes/Calendar.class.php' );
 		$this->calendar = new rtbCalendar();
 
@@ -343,7 +346,10 @@ class rtbInit {
 			echo "<p>You still have access to the premium features you purchased, and you can read more about why we've combined them <a href='http://www.fivestarplugins.com/2019/10/21/five-star-restaurant-reservations-new-features-more-options/'>on our blog</a></p>";
 			echo "</div>";
 		}
-		
+		/**
+		 * Calendar menu added by Yass-Dev
+		 * @since 2.2.4
+		 */
 		?>
 		<div class="rtb-admin-header-menu">
 			<h2 class="nav-tab-wrapper">
@@ -376,6 +382,10 @@ class rtbInit {
 			return;
 		}
 
+		/**
+		 * Enqueue calendar scripts added by Yass-Dev
+		 * @since 2.2.4
+		 */
 		if (
 			$screen->base == 'toplevel_page_rtb-bookings' 
 			|| $screen->base == $admin_page_hooks['rtb-bookings'] . '_page_rtb-settings' 

@@ -4,10 +4,9 @@ if ( !defined( 'ABSPATH' ) ) exit;
 if ( !class_exists( 'rtbCalendar' ) ) {
 
 /**
- * Class added by Yassine 
- * 
- * @since 2.4.4 
- *  */
+ * Class added by Yass-Dev
+ * @since 2.2.4
+ */
 class rtbCalendar {
 
     public function __construct() {

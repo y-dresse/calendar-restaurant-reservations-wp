@@ -76,14 +76,6 @@ class rtbBookingsTable extends WP_List_Table {
 	public $filter_location = 0;
 
 	/**
-	 * Current name filter
-	 *
-	 * @var string
-	 * @since 2.4.4
-	 */
-	public $filter_name = '';
-
-	/**
 	 * Current query string
 	 *
 	 * @var string
@@ -116,14 +108,6 @@ class rtbBookingsTable extends WP_List_Table {
 	public $visible_columns = array();
 
 	/**
-	 * Stored reference to rtb_booking post statuses
-	 *
-	 * @var array
-	 * @since 2.4.4
-	 */
-	public $booking_statuses = array();
-
-	/**
 	 * Initialize the table and perform any requested actions
 	 *
 	 * @since 0.0.1
@@ -139,13 +123,8 @@ class rtbBookingsTable extends WP_List_Table {
 			'ajax'      => false
 		) );
 
-		$this->populate_booking_status();
-
 		// Set the date filter
 		$this->set_date_filter();
-		
-		// Set the name filter
-		$this->set_other_filter();
 
 		// Strip unwanted query vars from the query string or ensure the correct
 		// vars are used
@@ -166,19 +145,7 @@ class rtbBookingsTable extends WP_List_Table {
 		$this->base_url = admin_url( 'admin.php?page=' . RTB_BOOKING_POST_TYPE );
 
 		// Add default items to the details column if they've been hidden
-			add_filter( 'rtb_bookings_table_column_details', array( $this, 'add_details_column_items' ), 10, 2 );
-	}
-
-	public function populate_booking_status()
-	{
-		global $rtb_controller;
-
-		foreach ( $rtb_controller->cpts->booking_statuses as $status => $data ) {
-			$this->booking_statuses[ $status ] = array(
-				'label' => $data['label'],
-				'count' => $data['label_count']['singular']
-			);
-		}
+		add_filter( 'rtb_bookings_table_column_details', array( $this, 'add_details_column_items' ), 10, 2 );
 	}
 
 	/**
@@ -220,18 +187,6 @@ class rtbBookingsTable extends WP_List_Table {
 		if ( $end_time === null ) {
 			$this->filter_end_time = !empty( $_GET['end_time'] ) ? sanitize_text_field( $_GET['end_time'] ) : null;
 			$this->filter_end_time = !empty( $_POST['end_time'] ) ? sanitize_text_field( $_POST['end_time'] ) : $this->filter_end_time;
-		}
-	}
-
-	/**
-	 * Set filter like name
-	 *
-	 * @since 2.4.4
-	 */
-	public function set_other_filter()
-	{
-		if( isset( $_GET['filter_name'] ) && ! empty( $_GET['filter_name'] ) ) {
-			$this->filter_name = sanitize_text_field( $_GET['filter_name'] );
 		}
 	}
 
@@ -303,56 +258,13 @@ class rtbBookingsTable extends WP_List_Table {
 		}
 
 		// Strip out existing date filters from the date_range view urls
-		$date_range_query_string = remove_query_arg(
-			array( 'date_range', 'start_date', 'end_date', 'filter_name' ), 
-			$this->query_string
-		);
+		$date_range_query_string = remove_query_arg( array( 'date_range', 'start_date', 'end_date' ), $this->query_string );
 
 		$views = array(
-			'upcoming' => sprintf( 
-				'<a href="%s"%s>%s</a>', 
-				esc_url( 
-					add_query_arg( 
-						array( 'paged' => FALSE ), 
-						$date_range_query_string 
-					) 
-				), 
-				$date_range === '' ? ' class="current"' : '', 
-				__( 'Upcoming', 'restaurant-reservations' ) ), 
-
-			'today' => sprintf( 
-				'<a href="%s"%s>%s</a>', 
-				esc_url( 
-					add_query_arg( 
-						array( 'date_range' => 'today', 'paged' => FALSE ), 
-						$date_range_query_string 
-					) 
-				), 
-				$date_range === 'today' ? ' class="current"' : '', 
-				__( 'Today', 'restaurant-reservations' ) ),
-
-			'past' => sprintf( 
-				'<a href="%s"%s>%s</a>', 
-				esc_url( 
-					add_query_arg( 
-						array( 'date_range' => 'past', 'paged' => FALSE ), 
-						$date_range_query_string
-					)
-				), 
-				$date_range === 'past' ? ' class="current"' : '', 
-				__( 'Past', 'restaurant-reservations' ) ),
-
-			'all' => sprintf( 
-				'<a href="%s"%s>%s</a>', 
-				esc_url( 
-					add_query_arg( 
-						array( 'date_range' => 'all', 'paged' => FALSE ), 
-						$date_range_query_string 
-					) 
-				), 
-				$date_range == 'all' ? ' class="current"' : '', 
-				__( 'All', 'restaurant-reservations' ) 
-			),
+			'upcoming'	=> sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'paged' => FALSE ), remove_query_arg( array( 'date_range' ), $date_range_query_string ) ) ), $date_range === '' ? ' class="current"' : '', __( 'Upcoming', 'restaurant-reservations' ) ),
+			'today'	    => sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'date_range' => 'today', 'paged' => FALSE ), $date_range_query_string ) ), $date_range === 'today' ? ' class="current"' : '', __( 'Today', 'restaurant-reservations' ) ),
+			'past'	    => sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'date_range' => 'past', 'paged' => FALSE ), $date_range_query_string ) ), $date_range === 'past' ? ' class="current"' : '', __( 'Past', 'restaurant-reservations' ) ),
+			'all'		=> sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'date_range' => 'all', 'paged' => FALSE ), $date_range_query_string ) ), $date_range == 'all' ? ' class="current"' : '', __( 'All', 'restaurant-reservations' ) ),
 		);
 
 		if ( $date_range == 'custom' ) {
@@ -362,33 +274,12 @@ class rtbBookingsTable extends WP_List_Table {
 			$views['date'] = '<a id="rtb-date-filter-link" href="#">' . esc_html__( 'Specific Date(s)/Time', 'restaurant-reservations' ) . '</a>';
 		}
 
-		$views['filter_name'] = sprintf( 
-			'<input type="text" value="%s"><a href="%s"%s>%s</a>', 
-			$this->filter_name,
-			esc_url( 
-				add_query_arg( 
-					array( 'filter_name' => '', 'paged' => FALSE ), 
-					$date_range_query_string 
-				) 
-			), 
-			'' != $this->filter_name ? ' class="current"' : '', 
-			'<span class="dashicons dashicons-search"></span>' 
-		);
-
 		$views = apply_filters( 'rtb_bookings_table_views_date_range', $views );
 		?>
 
 		<div id="rtb-filters">
 			<ul class="subsubsub rtb-views-date_range">
-				<?php
-					$total = count( $views );
-					$index = 1;
-					foreach ($views as $class => $value) {
-						$separator = $index != $total ? ' |' : '';
-						echo "<li class=\"{$class}\">{$value}{$separator}</li>";
-						$index++;
-					}
-				?>
+				<li><?php echo join( ' | </li><li>', $views ); ?></li>
 			</ul>
 
 			<div class="date-filters">
@@ -402,18 +293,15 @@ class rtbBookingsTable extends WP_List_Table {
 					<input type="text" id="end-date" name="end_date" class="datepicker" value="<?php echo esc_attr( $this->filter_end_date ); ?>" placeholder="<?php _e( 'End Date', 'restaurant-reservations' ); ?>" />
 					<input type="text" id="end-time" name="end_time" class="timepicker" value="<?php echo esc_attr( $this->filter_end_time ); ?>" placeholder="<?php _e( 'End Time', 'restaurant-reservations' ); ?>" />
 				</div>
-				
 				<input type="submit" class="button button-secondary" value="<?php _e( 'Apply', 'restaurant-reservations' ); ?>"/>
-				
 				<?php if( !empty( $this->filter_start_date ) || !empty( $this->filter_end_date ) || !empty( $this->filter_start_time ) || !empty( $this->filter_end_time ) ) : ?>
-					<a href="<?php echo esc_url( add_query_arg( array( 'action' => 'clear_date_filters' ) ) ); ?>" class="button button-secondary"><?php _e( 'Clear Filter', 'restaurant-reservations' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'action' => 'clear_date_filters' ) ) ); ?>" class="button button-secondary"><?php _e( 'Clear Filter', 'restaurant-reservations' ); ?></a>
 				<?php endif; ?>
+			</div>
 
-				<?php if( !empty( $_GET['status'] ) ) : ?>
-					<input type="hidden" name="status" value="<?php echo esc_attr( sanitize_text_field( $_GET['status'] ) ); ?>"/>
-				<?php endif; ?>
-
-				</div>
+			<?php if( !empty( $_GET['status'] ) ) : ?>
+				<input type="hidden" name="status" value="<?php echo esc_attr( sanitize_text_field( $_GET['status'] ) ); ?>"/>
+			<?php endif; ?>
 		</div>
 
 <?php
@@ -425,51 +313,18 @@ class rtbBookingsTable extends WP_List_Table {
 	 */
 	public function get_views() {
 
-		$current = isset( $_GET['status'] ) ? sanitize_text_field( $_GET['status'] ) : '';
+		$current = isset( $_GET['status'] ) ? $_GET['status'] : '';
 
-		$this->booking_statuses[ 'all' ] = array( 
-			'label' => __( 'All', 'restaurant-reservations' ),
-			'count' => _n_noop(
-				'All <span class="count">(%s)</span>', 
-				'All <span class="count">(%s)</span>', 
-				'restaurant-reservations' 
-			)[ 'singular' ]
-		);
-		$this->booking_statuses[ 'trash' ] = array( 
-			'label' => __( 'Trash', 'restaurant-reservations' ),
-			'count' => _n_noop(
-				'Trash <span class="count">(%s)</span>', 
-				'Trash <span class="count">(%s)</span>', 
-				'restaurant-reservations' 
-			)[ 'singular' ]
+		$views = array(
+			'all'		=> sprintf( '<a href="%s"%s>%s</a>', esc_url( remove_query_arg( array( 'status', 'paged' ), $this->query_string ) ), $current === 'all' || $current == '' ? ' class="current"' : '', __( 'All', 'restaurant-reservations' ) . ' <span class="count">(' . $this->booking_counts['total'] . ')</span>' ),
+			'pending'	=> sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'status' => 'pending', 'paged' => FALSE ), $this->query_string ) ), $current === 'pending' ? ' class="current"' : '', __( 'Pending', 'restaurant-reservations' ) . ' <span class="count">(' . $this->booking_counts['pending'] . ')</span>' ),
+			'confirmed'	=> sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'status' => 'confirmed', 'paged' => FALSE ), $this->query_string ) ), $current === 'confirmed' ? ' class="current"' : '', __( 'Confirmed', 'restaurant-reservations' ) . ' <span class="count">(' . $this->booking_counts['confirmed'] . ')</span>' ),
+			'closed'	=> sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'status' => 'closed', 'paged' => FALSE ), $this->query_string ) ), $current === 'closed' ? ' class="current"' : '', __( 'Closed', 'restaurant-reservations' ) . ' <span class="count">(' . $this->booking_counts['closed'] . ')</span>' ),
+			'trash' => sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'status' => 'trash', 'paged' => FALSE ), $this->query_string ) ), $current === 'trash' ? ' class="current"' : '', __( 'Trash', 'restaurant-reservations' ) . ' <span class="count">(' . $this->booking_counts['trash'] . ')</span>' ),
 		);
 
-		ksort( $this->booking_statuses );
-
-		$views = [];
-
-		foreach ( $this->booking_statuses as $status => $data )
-		{
-			$url = 'all' == $status 
-				? esc_url( 
-			      remove_query_arg( 
-			        array( 'status', 'paged' ), 
-			        $this->query_string 
-			      ) 
-			    )
-				: esc_url( 
-			      add_query_arg( 
-			        array( 'status' => $status, 'paged' => FALSE ), 
-			        $this->query_string 
-			      ) 
-			    );
-
-			$views[ $status ] = sprintf(
-		    '<a href="%s"%s>%s</a>', 
-		    $url, 
-		    $current === $status ? ' class="current"' : '', 
-		    sprintf( $data['count'], $this->booking_counts[ $status ] )
-		  );
+		if ( isset( $this->booking_counts['payment_failed'] ) and $this->booking_counts['payment_failed'] > 0 ) {
+			array_splice($views, 3, 0, array( 'payment_failed' => sprintf( '<a href="%s"%s>%s</a>', esc_url( add_query_arg( array( 'status' => 'payment_failed', 'paged' => FALSE ), $this->query_string ) ), $current === 'payment_failed' ? ' class="current"' : '', __( 'Payment Failed', 'restaurant-reservations' ) . ' <span class="count">(' . $this->booking_counts['payment_failed'] . ')</span>' ), ) );
 		}
 
 		return apply_filters( 'rtb_bookings_table_views_status', $views );
@@ -480,8 +335,8 @@ class rtbBookingsTable extends WP_List_Table {
 	 * @since 0.0.1
 	 */
 	public function single_row( $item ) {
-		static $row_alternate_class = 'alternate';
-		$row_alternate_class = ( $row_alternate_class == 'alternate' ? '' : 'alternate' );
+		static $row_alternate_class = '';
+		$row_alternate_class = ( $row_alternate_class == '' ? 'alternate' : '' );
 
 		$row_classes = array( esc_attr( $item->post_status ) );
 
@@ -581,13 +436,16 @@ class rtbBookingsTable extends WP_List_Table {
 	 * @since 0.0.1
 	 */
 	public function get_sortable_columns() {
+		/**
+		 * Added by Yass-Dev to order "custom-fields: groupe-2"
+		 * @since 2.2.4
+		 */
 		$columns = array(
 			'id' 		=> array( 'ID', true ),
 			'date' 		=> array( 'date', true ),
 			'name' 		=> array( 'title', true ),
 			'status' 	=> array( 'status', true ),
-			'phone' 	=> array( 'phone', true ),
-			'groupe-2'	=> array( 'groupe-2', true ),
+			'groupe-2' 	=> array( 'groupe-2', true ),
 		);
 		return apply_filters( 'rtb_bookings_table_sortable_columns', $columns );
 	}
@@ -782,15 +640,11 @@ class rtbBookingsTable extends WP_List_Table {
 	 * @since 0.0.1
 	 */
 	public function process_bulk_action() {
-		$ids    = isset( $_POST['bookings'] ) 
-			? rtbHelper::sanitize_recursive( $_POST['bookings'], 'absint' ) 
-			: false;
-		$action = isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) : false;
+		$ids    = isset( $_POST['bookings'] ) ? $_POST['bookings'] : false;
+		$action = isset( $_POST['action'] ) ? $_POST['action'] : false;
 
 		// Check bulk actions selector below the table
-		$action = $action == '-1' && isset( $_POST['action2'] ) 
-			? sanitize_text_field( $_POST['action2'] ) 
-			: $action;
+		$action = $action == '-1' && isset( $_POST['action2'] ) ? $_POST['action2'] : $action;
 
 		if( empty( $action ) || $action == '-1' ) {
 			return;
@@ -1066,7 +920,7 @@ class rtbBookingsTable extends WP_List_Table {
 
 		global $wpdb;
 
-		$where = "WHERE p.post_type = '" . RTB_BOOKING_POST_TYPE . "'";
+		$where = "WHERE p.post_type = '" . RTB_BOOKING_POST_TYPE . "' AND p.post_status != 'draft'";
 
 		if ( $this->filter_start_date !== null || $this->filter_end_date !== null ) {
 
@@ -1076,9 +930,6 @@ class rtbBookingsTable extends WP_List_Table {
 			}
 
 			if ( $this->filter_end_date !== null ) {
-				if( empty( $this->filter_end_time ) ) {
-					$this->filter_end_time = '23:59:58';
-				}
 				$end_date = new DateTime( $this->filter_end_date . ' ' . $this->filter_end_time );
 				$where .= " AND p.post_date <= '" . $end_date->format( 'Y-m-d H:i:s' ) . "'";
 			}
@@ -1086,17 +937,12 @@ class rtbBookingsTable extends WP_List_Table {
 		} elseif ( !empty( $_GET['date_range'] ) ) {
 
 			if ( $_GET['date_range'] ==  'today' ) {
-				$where .= " AND p.post_date >= '" . date( 'Y-m-d', current_time( 'timestamp' ) ) . "' AND p.post_date <= '" . date( 'Y-m-d', current_time( 'timestamp' ) + 86400 ) . "'";
+				$where .= " AND p.post_date >= '" . date( 'Y-m-d', current_time( 'timestamp' ) ) . "' AND p.post_date < '" . date( 'Y-m-d', current_time( 'timestamp' ) + 86400 ) . "'";
 			}
 
 		// Default date setting is to show upcoming bookings
 		} else {
 			$where .= " AND p.post_date >= '" . date( 'Y-m-d H:i:s', current_time( 'timestamp' ) - 3600 ) . "'";
-		}
-
-		// Filter by name
-		if( ! empty( $this->filter_name ) ) {
-			$where .= " AND p.post_title LIKE '%".esc_sql( $wpdb->esc_like( $this->filter_name ) )."%'";
 		}
 
 		$join = '';
@@ -1119,11 +965,47 @@ class rtbBookingsTable extends WP_List_Table {
 			$this->booking_counts[$state] = 0;
 		}
 
-		$this->booking_counts['all'] = 0;
+		$this->booking_counts['total'] = 0;
 		foreach ( (array) $count as $row ) {
 			$this->booking_counts[$row['post_status']] = $row['num_posts'];
-			$this->booking_counts['all'] += $row['num_posts'];
+			$this->booking_counts['total'] += $row['num_posts'];
 		}
+
+	}
+
+	public function array_sort($array, $on, $order=SORT_ASC)
+	{
+		$new_array = array();
+		$sortable_array = array();
+	
+		if (count($array) > 0) {
+			foreach ($array as $k => $v) {
+				if (is_array($v)) {
+					foreach ($v as $k2 => $v2) {
+						if ($k2 == $on) {
+							$sortable_array[$k] = $v2;
+						}
+					}
+				} else {
+					$sortable_array[$k] = $v;
+				}
+			}
+	
+			switch ($order) {
+				case SORT_ASC:
+					asort($sortable_array);
+				break;
+				case SORT_DESC:
+					arsort($sortable_array);
+				break;
+			}
+	
+			foreach ($sortable_array as $k => $v) {
+				$new_array[$k] = $array[$k];
+			}
+		}
+	
+		return $new_array;
 	}
 
 	/**
@@ -1146,10 +1028,6 @@ class rtbBookingsTable extends WP_List_Table {
 			$args['end_time'] = $this->filter_end_time;
 		}
 
-		if ( ! empty( $this->filter_name ) ) {
-			$args['filter_name'] = $this->filter_name;
-		}
-
 		$query = new rtbQuery( $args, 'bookings-table' );
 		$query->parse_request_args();
 		$query->prepare_args();
@@ -1158,10 +1036,22 @@ class rtbBookingsTable extends WP_List_Table {
 		if ( $query->args['date_range'] == 'all' && !isset( $_REQUEST['orderby'] ) ) {
 			$query->args['order'] = 'DESC';
 		}
-
 		$query->args = apply_filters( 'rtb_bookings_table_query_args', $query->args );
-
 		$this->bookings = $query->get_bookings();
+
+		/**
+		 * Added by Yass-Dev to order "custom-fields"
+		 * @since 2.2.4
+		 */
+		if( isset($query->args['orderby']) && $query->args['orderby'] == 'groupe-2'){
+			$values_to_order = array_map(function($e){
+				return $e->custom_fields['groupe-2'];
+			}, $this->bookings);
+
+			$sort_value = $query->args['order'] == 'desc' ? SORT_DESC : SORT_ASC;
+			array_multisort($values_to_order, $sort_value, $this->bookings);
+		}
+
 	}
 
 	/**
@@ -1178,7 +1068,7 @@ class rtbBookingsTable extends WP_List_Table {
 
 		$this->items = $this->bookings;
 
-		$total_items   = empty( $_GET['status'] ) ? $this->booking_counts['all'] : $this->booking_counts[$_GET['status']];
+		$total_items   = empty( $_GET['status'] ) ? $this->booking_counts['total'] : $this->booking_counts[$_GET['status']];
 
 		$this->set_pagination_args( array(
 				'total_items' => $total_items,
