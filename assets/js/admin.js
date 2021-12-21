@@ -960,7 +960,7 @@ jQuery(document).ready(function ($) {
 				center: 'title',
 				right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
 			},
-			buttonsText: {
+			buttonText: {
 				today: "Aujourd'hui",
 				month: 'Mois',
 				week: 'Semaine',
